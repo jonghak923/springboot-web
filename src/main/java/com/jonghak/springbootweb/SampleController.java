@@ -1,5 +1,6 @@
 package com.jonghak.springbootweb;
 
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -97,6 +98,46 @@ public class SampleController {
     @ResponseBody
     public String hiJonghak() {
         return "hi jonghak";
+    }
+
+    /**
+     * - 특정한 타입의 데이터를 담고 있는 요청만 처리하는 핸들러
+     *  ● @RequestMapping(consumes=MediaType.APPLICATION_JSON_VALUE)
+     *  ● Content-Type 헤더로 필터링
+     *  ● 매치 되는 않는 경우에 415 Unsupported Media Type 응답
+     *
+     * - class의 ReuqestMapping에 일괄로 선언 가능
+     *  ● 클래스에 선언한 @RequestMapping에 사용한 것과 조합이 되지 않고 메소드에 사용한 @RequestMapping의 설정으로 덮어쓴다.
+     */
+    @RequestMapping(value = "/mediaType", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public String mediaType() {
+        return "mediaType";
+    }
+
+    /**
+     * - 특정한 타입의 응답을 만드는 핸들러
+     *  ● @RequestMapping(produces=”application/json”)
+     *  ● Accept 헤더로 필터링 (하지만 살짝... 오묘함 : Client가 Accept값 없이 요청하는 경우 서버의 produces 설정대로 return type이 결정됨)
+     *  ● 매치 되지 않는 경우에 406 Not Acceptable 응답
+     */
+    @RequestMapping(
+            value = "/mediaTypeAccept",
+            consumes = "!" + MediaType.APPLICATION_JSON_VALUE,    // 요청 시 type (header.contentType)
+            produces = MediaType.TEXT_PLAIN_VALUE           // 응답 시 type (header.accept)
+    )
+    @ResponseBody
+    public String mediaTypeAccept() {
+        return "mediaTypeAccept";
+    }
+
+    /**
+     * Not (!)을 사용해서 특정 미디어 타입이 아닌 경우로 맵핑 할 수도 있다
+     */
+    @RequestMapping(value = "/mediaTypeNot", consumes = "!" + MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public String mediaTypeNot() {
+        return "mediaTypeNot";
     }
 
 }
