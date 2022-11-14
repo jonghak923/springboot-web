@@ -3,6 +3,7 @@ package com.jonghak.springbootweb;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -102,5 +103,34 @@ class sampleControllerTest {
                 )
                 .andDo(print())
                 .andExpect(status().isUnsupportedMediaType());
+    }
+
+    @Test
+    void headers() throws Exception {
+        this.mockMvc.perform(get("/headers")
+                        .header(HttpHeaders.AUTHORIZATION, "111")
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // 404 error
+        this.mockMvc.perform(get("/headers")
+                        .header(HttpHeaders.AUTHORIZATION, "222")
+                )
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void params() throws Exception {
+        this.mockMvc.perform(get("/params")
+                        .param("name", "jonghak"))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // 400 error
+        this.mockMvc.perform(get("/params"))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 }
