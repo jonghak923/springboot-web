@@ -26,4 +26,23 @@ class HandlerMethodControllerTest {
                 .andExpect(jsonPath("$.name").value("jonghak"));
     }
 
+
+    @Test
+    public void getEventParam() throws Exception {
+        this.mockMvc.perform(post("/eventParams?name=jonghak&limit=10"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("name").value("jonghak"))
+                .andExpect(jsonPath("limit").value(10));
+    }
+
+    @Test
+    public void getEventParamMap() throws Exception {
+        this.mockMvc.perform(post("/eventParamMap")
+                        .param("name", "jonghak"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("name").value("jonghak"));
+    }
+
 }

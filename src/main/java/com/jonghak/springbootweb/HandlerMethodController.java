@@ -1,10 +1,9 @@
 package com.jonghak.springbootweb;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.MatrixVariable;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Controller
 public class HandlerMethodController {
@@ -30,6 +29,39 @@ public class HandlerMethodController {
         Event event = new Event();
         event.setId(id);
         event.setName(name);
+        return event;
+
+    }
+
+    /**
+     * - @RequestParam
+     *  ● 요청 매개변수에 들어있는 단순 타입 데이터를 메소드 아규먼트로 받아올 수 있다.
+     *  ● 값이 반드시 있어야 한다.
+     *      ○ required=false 또는 Optional을 사용해서 부가적인 값으로 설정할 수도 있다.
+     *  ● String이 아닌 값들은 타입 컨버전을 지원한다.
+     *  ● Map<String, String> 또는 MultiValueMap<String, String>에 사용해서 모든 요청 매개변수를 받아 올 수도 있다.
+     *  ● 이 애노테이션은 생략 할 수 잇다.
+     *
+     * - 요청 매개변수란?
+     *  ● 쿼리 매개변수 : http://localhost:8080?name=jonghak
+     *  ● 폼 데이터 :
+     */
+    @PostMapping("/eventParams")
+    @ResponseBody
+    public Event getEventParams(@RequestParam String name,
+                                @RequestParam Integer limit) {
+        Event event = new Event();
+        event.setName(name);
+        event.setLimit(limit);
+        return event;
+
+    }
+
+    @PostMapping("/eventParamMap")
+    @ResponseBody
+    public Event getEventParams(@RequestParam Map<String, String> params) {
+        Event event = new Event();
+        event.setName(params.get("name"));
         return event;
 
     }

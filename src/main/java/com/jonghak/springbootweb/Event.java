@@ -6,4 +6,5 @@ import lombok.Data;
 public class Event {
     private int id;
     private String name;
+    private Integer limit;
 }
