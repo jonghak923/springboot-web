@@ -19,14 +19,14 @@ class PracticeControllerTest {
 
     @Test
     void firstMethod() throws Exception {
-        this.mockMvc.perform(get("/events/1"))
+        this.mockMvc.perform(get("/practice/1"))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
 
     @Test
     void twoMethod() throws Exception {
-        this.mockMvc.perform(post("/events")
+        this.mockMvc.perform(post("/practice")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -35,14 +35,14 @@ class PracticeControllerTest {
 
     @Test
     void threeMethod() throws Exception {
-        this.mockMvc.perform(delete("/events/1"))
+        this.mockMvc.perform(delete("/practice/1"))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
 
     @Test
     void fourMethod() throws Exception {
-        this.mockMvc.perform(put("/events/1")
+        this.mockMvc.perform(put("/practice/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
