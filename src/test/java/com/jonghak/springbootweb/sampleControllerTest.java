@@ -7,6 +7,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -132,5 +134,43 @@ class sampleControllerTest {
         this.mockMvc.perform(get("/params"))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void requestHeadAndOptions() throws Exception {
+        /**
+         * - 우리가 구현하지 않아도 스프링 웹 MVC에서 자동으로 처리하는 HTTP Method
+         *  ● HEAD
+         *  ● OPTIONS
+         *
+         * - HEAD : 사전 체크 용도
+         *  ● GET 요청과 동일하지만 응답 본문을 받아오지 않고 응답 헤더만 받아온다.
+         *
+         * - OPTIONS : 사전 체크 용도
+         *  ● 사용할 수 있는 HTTP Method 제공
+         *  ● 서버 또는 특정 리소스가 제공하는 기능을 확인할 수 있다.
+         *  ● 서버는 Allow 응답 헤더에 사용할 수 있는 HTTP Method 목록을 제공해야 한다.
+         */
+        this.mockMvc.perform(head("/hello"))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+
+        this.mockMvc.perform(options("/hello"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(header().stringValues(HttpHeaders.ALLOW,
+                                                hasItems(containsString("GET"),
+                                                        containsString("POST"),
+                                                        containsString("HEAD"),
+                                                        containsString("OPTIONS"))));
+
+    }
+
+    @Test
+    public void helloCustom() throws Exception {
+        this.mockMvc.perform(get("/helloCustom"))
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 }

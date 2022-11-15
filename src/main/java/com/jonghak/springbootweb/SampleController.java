@@ -67,6 +67,12 @@ public class SampleController {
         return "hello";
     }
 
+    @GetHelloMapping
+    @ResponseBody
+    public String helloCustom() {
+        return "helloCustom";
+    }
+
 
     /**
      * - 정규 표현식으로 맵핑할 수도 있습니다.
