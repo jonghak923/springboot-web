@@ -8,8 +8,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest
 class HandlerMethodControllerTest {
@@ -44,5 +43,23 @@ class HandlerMethodControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("name").value("jonghak"));
     }
+
+    @Test
+    public void postEventForm() throws Exception {
+        this.mockMvc.perform(get("/eventParams/form"))
+                .andDo(print())
+                .andExpect(view().name("events/form")) // view 이름 확인
+                .andExpect(model().attributeExists("event"));  // model에 event라는 명칭 존재여부 확인
+    }
+
+    @Test
+    public void eventModel() throws Exception {
+        this.mockMvc.perform(post("/eventModel/name/jonghak")
+                .param("limit", "-10"))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+
 
 }
