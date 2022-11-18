@@ -1,16 +1,38 @@
 package com.jonghak.springbootweb;
 
+import com.sun.net.httpserver.HttpsServer;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.support.SessionStatus;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+
 @Controller
+/**
+ * - @SessionAttributes : 선언된 클래스 안에서만 선언된 모델명을 세션에 넣어준다.
+ * - 모델 정보를 HTTP 세션에 저장해주는 애노테이션
+ *  ● HttpSession을 직접 사용할 수도 있지만
+ *  ● 이 애노테이션에 설정한 이름에 해당하는 모델 정보를 자동으로 세션에 넣어준다.
+ *  ● @ModelAttribute는 세션에 있는 데이터도 바인딩한다.
+ *  ● 여러 화면(또는 요청)에서 사용해야 하는 객체를 공유할 때 사용한다.
+ *
+ * - SessionStatus를 사용해서 세션 처리 완료를 알려줄 수 있다.
+ *  ● 폼 처리 끝나고 세션을 비울 때 사용한다.
+ *
+ */
+@SessionAttributes("event")
 public class HandlerMethodController {
+
+    private Model model;
 
     /**
      * - @PathVariable
@@ -113,5 +135,125 @@ public class HandlerMethodController {
         }
         return event;
     }
+
+    @GetMapping("/eventsFormSubmit/formSubmit")
+    public String eventsFormSubmit(Model model, HttpSession httpSession) {
+        Event event = new Event();
+        event.setLimit(50);
+        model.addAttribute("event", event);
+        httpSession.setAttribute("event", event);
+        return "events/formSubmit";
+    }
+
+    /**
+     * - 폼 서브밋 (에러 처리)
+     * - 바인딩 에러 발생 시 Model에 담기는 정보
+     *  ● Event
+     *  ● BindingResult.event
+     *
+     * - Post / Redirect / Get 패턴
+     *  ● https://en.wikipedia.org/wiki/Post/Redirect/Get
+     *  ● Post 이후에 브라우저를 리프래시(새로고침) 하더라도 폼 서브밋이 발생하지 않도록 하는 패턴
+     */
+    @PostMapping("/eventsFormSubmit")
+    public String eventsFormSubmit(@Validated({Event.ValidateLimit.class, Event.ValidateName.class}) @ModelAttribute Event event,
+                                   BindingResult bindingResult,
+                                   Model model) {
+        if(bindingResult.hasErrors()) {
+            return "events/formSubmit";
+        }
+        List<Event> eventList = new ArrayList<>();
+        eventList.add(event);
+        model.addAttribute("eventList", eventList);
+
+        return "redirect:events/list";
+    }
+
+    /**
+     * - @SessionAttribute
+     * - HTTP 세션에 들어있는 값 참조할 때 사용
+     *  ● HttpSession을 사용할 때 비해 타입 컨버전을 자동으로 지원하기 때문에 조금 편리함.
+     *  ● HTTP 세션에 데이터를 넣고 빼고 싶은 경우에는 HttpSession을 사용할 것.
+     *
+     * - @SessionAttributes와는 다르다.
+     *  ● @SessionAttributes는 해당 컨트롤러 내에서만 동작.
+     *      ○ 즉, 해당 컨트롤러 안에서 다루는 특정 모델 객체를 세션에 넣고 공유할 때 사용.
+     *  ● @SessionAttribute는 컨트롤러 밖(인터셉터 또는 필터 등)에서 만들어 준 세션 데이터에 접근할 때 사용한다.
+     */
+    @GetMapping("/events/list")
+    public String getEvents(Model model,
+                            HttpSession httpSession,
+                            @SessionAttribute LocalDateTime visitTime) {
+
+        System.out.println("@SessionAttribute visitTime :" + visitTime.toString());
+        LocalDateTime httpSessionVisitTime = (LocalDateTime) httpSession.getAttribute("visitTime");
+        System.out.println("httpSessionVisitTime visitTime :" + httpSessionVisitTime.toString());
+
+        Event event = new Event();
+        event.setName("spring");
+        event.setLimit(10);
+
+        List<Event> eventList = new ArrayList<>();
+        eventList.add(event);
+
+        model.addAttribute(eventList);
+
+        return "events/list";
+    }
+
+    /**
+     * - 멀티 폼 서브밋
+     * - 세션을 사용해서 여러 폼에 걸쳐 데이터를 나눠 입력 받고 저장하기
+     *  ● 이벤트 이름 입력받고
+     *  ● 이벤트 제한 인원 입력받고
+     *  ● 서브밋 -> 이벤트 목록으로!
+     *
+     * - 완료된 경우에 세션에서 모델 객체 제거하기
+     *  ● SessionStatus : SessionStatus를 사용해서 세션 처리 완료를 알려줄 수 있다.
+     *      ex) SessionStatus sessionStatus를 메소드 파라미터 부분에 선언하고 sessionStatus.setComplete(); 호출하면
+     *          @SessionAttributes로 등록된 세션이 없어진다. (다른 방법으로 등록된 세션정보는 유지됨)
+     *
+     */
+    @GetMapping("/events/form/name")
+    public String eventsFormName(Model model, HttpSession httpSession) {
+        Event newEvent = new Event();
+        newEvent.setLimit(50);
+        model.addAttribute("event", newEvent);
+        httpSession.setAttribute("limit", "50");
+        return "events/form-name";
+    }
+
+    @PostMapping("/events/form/name")
+    public String eventsFormNameSubmit(@Validated({Event.ValidateName.class, Event.ValidateLimit.class}) @ModelAttribute Event event,
+                                       BindingResult bindingResult) {
+        if(bindingResult.hasErrors()) {
+            return "events/form-name";
+        }
+
+        return "redirect:/events/form/limit";
+    }
+
+    @GetMapping("/events/form/limit")
+    public String eventsFormLimit(Model model) {
+        model.addAttribute("event", model.getAttribute("event"));
+        return "events/form-limit";
+    }
+
+    @PostMapping("/events/form/limit")
+    public String eventsFormLimitSubmit(@Validated({Event.ValidateName.class, Event.ValidateLimit.class}) @ModelAttribute Event event,
+                                        BindingResult bindingResult,
+                                        SessionStatus sessionStatus,
+                                        HttpSession httpSession) {
+        if(bindingResult.hasErrors()) {
+            return "events/form-limit";
+        }
+
+        // session 비움
+        sessionStatus.setComplete();
+
+        return "redirect:/events/list";
+    }
+
+
 
 }

@@ -3,8 +3,14 @@ package com.jonghak.springbootweb;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.web.servlet.ModelAndView;
 
+import java.util.Map;
+
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -60,6 +66,34 @@ class HandlerMethodControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    public void eventsFormSubmit() throws Exception {
+        MockHttpServletRequest request = this.mockMvc.perform(get("/eventsFormSubmit/formSubmit"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(view().name("events/formSubmit"))
+                .andExpect(model().attributeExists("event"))
+                .andExpect(request().sessionAttribute("event", notNullValue()))
+                .andReturn().getRequest();
 
+        Object event = request.getSession().getAttribute("event");
+        System.out.println(event);
+
+    }
+
+    @Test
+    public void postEventsFormSubmit() throws Exception {
+        ResultActions resultActions = this.mockMvc.perform(post("/eventsFormSubmit")
+                        .param("name", "jonghak")
+                        .param("limit", "-10"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(model().hasErrors());
+
+        // TEST에서 modelAndView 정보를 체크하고 싶을때 아래와 같이 확인
+        ModelAndView modelAndView = resultActions.andReturn().getModelAndView();
+        Map<String, Object> model = modelAndView.getModel();
+        System.out.println(model.size());
+    }
 
 }
