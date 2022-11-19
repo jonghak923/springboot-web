@@ -7,6 +7,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -181,7 +182,9 @@ public class HandlerMethodController {
      *  ● @SessionAttribute는 컨트롤러 밖(인터셉터 또는 필터 등)에서 만들어 준 세션 데이터에 접근할 때 사용한다.
      */
     @GetMapping("/events/list")
-    public String getEvents(Model model,
+    public String getEvents(@ModelAttribute("redirectEvent") Event newEvent, // @SessionAttributes에 선언한 명칭과 동일하게 하면 session에 먼저 찾음, 없는 경우 오류
+                            @ModelAttribute("flashEvent") Event flashEvent, // session 등록하여 전달한 후 삭제됨 (일회성)
+                            Model model,
                             HttpSession httpSession,
                             @SessionAttribute LocalDateTime visitTime) {
 
@@ -189,12 +192,19 @@ public class HandlerMethodController {
         LocalDateTime httpSessionVisitTime = (LocalDateTime) httpSession.getAttribute("visitTime");
         System.out.println("httpSessionVisitTime visitTime :" + httpSessionVisitTime.toString());
 
+
+        // redirct, flash로 전달된 객체는 모델에서도 꺼낼 수 있음
+        Event redirectEventFromModel = (Event) model.asMap().get("redirectEvent");
+        Event flashEventFromModel = (Event) model.asMap().get("flashEvent");
+
         Event event = new Event();
         event.setName("spring");
         event.setLimit(10);
 
         List<Event> eventList = new ArrayList<>();
         eventList.add(event);
+        eventList.add(newEvent);
+        eventList.add(flashEvent);
 
         model.addAttribute(eventList);
 
@@ -243,13 +253,35 @@ public class HandlerMethodController {
     public String eventsFormLimitSubmit(@Validated({Event.ValidateName.class, Event.ValidateLimit.class}) @ModelAttribute Event event,
                                         BindingResult bindingResult,
                                         SessionStatus sessionStatus,
-                                        HttpSession httpSession) {
+                                        HttpSession httpSession,
+                                        RedirectAttributes redirectAttributes) {
         if(bindingResult.hasErrors()) {
             return "events/form-limit";
         }
 
         // session 비움
         sessionStatus.setComplete();
+
+        /**
+         * - RedirectAttributes : 리다이렉트 할 때 기본적으로 Model에 들어있는 primitive type 데이터는 URI 쿼리 매개변수에 추가된다.
+         *  ● 스프링 부트에서는 이 기능이 기본적으로 비활성화 되어 있다.
+         *  ● Ignore-default-model-on-redirect 프로퍼티를 사용해서 활성화 할 수 있다.
+         *
+         * - 원하는 값만 리다이렉트 할 때 전달하고 싶다면 RedirectAttributes에 명시적으로 추가할 수 있다. (URI 쿼리 파라미터)
+         * - 리다이렉트 요청을 처리하는 곳에서 쿼리 매개변수를 @RequestParam 또는 @ModelAttribute로 받을 수 있다.
+         */
+        redirectAttributes.addAttribute("name", event.getName());
+        redirectAttributes.addAttribute("limit", event.getLimit());
+
+        /**
+         * - Flash Attributes : 주로 리다이렉트시에 데이터를 전달할 때 사용한다.
+         *  ● 데이터가 URI에 노출되지 않는다.
+         *  ● 임의의 객체를 저장할 수 있다.
+         *  ● 보통 HTTP 세션을 사용한다.
+         * - 리다이렉트 하기 전에 데이터를 HTTP 세션에 저장하고 리다이렉트 요청을 처리 한 다음 그 즉시 제거한다.
+         * - RedirectAttributes를 통해 사용할 수 있다.
+         */
+        redirectAttributes.addFlashAttribute("flashEvent", event);
 
         return "redirect:/events/list";
     }

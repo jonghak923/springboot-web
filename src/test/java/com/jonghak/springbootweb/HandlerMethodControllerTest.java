@@ -8,6 +8,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.notNullValue;
@@ -95,5 +96,26 @@ class HandlerMethodControllerTest {
         Map<String, Object> model = modelAndView.getModel();
         System.out.println(model.size());
     }
+
+    @Test
+    public void redirectFlashEvent() throws Exception {
+        Event flashEvent = new Event();
+        flashEvent.setName("Flash Event");
+        flashEvent.setLimit(10);
+
+        this.mockMvc.perform(get("/events/list")
+                    .sessionAttr("visitTime", LocalDateTime.now())
+                    .flashAttr("flashEvent", flashEvent))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(xpath("//p").nodeCount(2));
+
+        /**
+         * - XPath
+         *  ● https://www.w3schools.com/xml/xpath_syntax.asp
+         *  ● https://www.freeformatter.com/xpath-tester.html#ad-output
+         */
+    }
+
 
 }
