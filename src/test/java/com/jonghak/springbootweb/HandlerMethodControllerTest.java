@@ -108,7 +108,7 @@ class HandlerMethodControllerTest {
                     .flashAttr("flashEvent", flashEvent))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(xpath("//p").nodeCount(2));
+                .andExpect(xpath("//p").nodeCount(6));
 
         /**
          * - XPath
