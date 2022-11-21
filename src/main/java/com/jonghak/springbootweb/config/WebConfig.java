@@ -1,5 +1,7 @@
 package com.jonghak.springbootweb.config;
 
+import org.apache.tika.Tika;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
@@ -22,5 +24,17 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new VisitTimeInterceptor());
+    }
+
+    /**
+     * - 공통으로 사용할 라이브러리 bean으로 등록
+     * - controller 및 service 에서 사용 방법
+     *      @Autowired
+     *      Tika tika;
+     *
+     */
+    @Bean
+    public Tika setConfigTika(){
+        return new Tika();
     }
 }
