@@ -82,6 +82,11 @@ class HandlerMethodControllerTest {
 
     }
 
+    /**
+     * - TEST시 확인사항!!! : HandlerMethodController에서 @SessionAttributes("event") 주석처리 후 테스트해야 성공함
+     *  ● Why? @SessionAttributes("event") 선언하게 되면 method에 event 명칭의 파라미터가 있을 경우 session에서 먼저 event 객체를 찾아 넣어주는데 session에 없기 때문에 오류 발생
+     *  ● and @SessionAttributes("event") 제거하거나 method에 event 명칭을 변경(view에서도 변경 필요!!)해 준다
+     */
     @Test
     public void postEventsFormSubmit() throws Exception {
         ResultActions resultActions = this.mockMvc.perform(post("/eventsFormSubmit")
@@ -108,6 +113,7 @@ class HandlerMethodControllerTest {
                     .flashAttr("flashEvent", flashEvent))
                 .andDo(print())
                 .andExpect(status().isOk())
+                .andExpect(model().attributeExists("categories"))
                 .andExpect(xpath("//p").nodeCount(6));
 
         /**

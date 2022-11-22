@@ -33,7 +33,28 @@ import java.util.Map;
 @SessionAttributes("event")
 public class HandlerMethodController {
 
-    private Model model;
+    /**
+     * - @ModelAttribute의 다른 사용법
+     *  ● @RequestMapping을 사용한 핸들러 메소드의 아규먼트에 사용하기 (이미 살펴 봤습니다.)
+     *  ● @Controller 또는 @ControllerAdvice (이 애노테이션은 뒤에서 다룹니다.)를 사용한 클래스에서 모델 정보를 초기화 or Default정보를 추가 할 때 사용한다.
+     *  ● @RequestMapping과 같이 사용하면 해당 메소드에서 리턴하는 객체를 모델에 넣어 준다.
+     *      ○ RequestToViewNameTranslator
+     */
+//    @ModelAttribute
+//    public void categories(Model model) {
+//        model.addAttribute("categories", List.of("study", "seminar", "hobby", "social"));
+//    }
+
+    @ModelAttribute("categories")
+    public List<String> categories(Model model) {
+        return List.of("study", "seminar", "hobby", "social");
+    }
+
+    @GetMapping("/events/modelAttribute")
+    @ModelAttribute // 생략가능, view는 RequestToViewNameTranslator에 따라 URI(/events/modelAttribute)를 참조하여 찾음
+    public Event eventsModelAttribute() {
+        return new Event();
+    }
 
     /**
      * - @PathVariable
@@ -128,7 +149,7 @@ public class HandlerMethodController {
      */
     @PostMapping("/eventModel/name/{name}")
     @ResponseBody
-    public Event eventModel(@Validated({Event.ValidateName.class}) @ModelAttribute Event event, BindingResult bindingResult) {
+    public Event eventModel(@Validated({Event.ValidateName.class}) @ModelAttribute("newEvent") Event event, BindingResult bindingResult) {
         if(bindingResult.hasErrors()) {
             bindingResult.getAllErrors().forEach(e -> {
                 System.out.println(e.toString());
@@ -159,7 +180,8 @@ public class HandlerMethodController {
     @PostMapping("/eventsFormSubmit")
     public String eventsFormSubmit(@Validated({Event.ValidateLimit.class, Event.ValidateName.class}) @ModelAttribute Event event,
                                    BindingResult bindingResult,
-                                   Model model) {
+                                   Model model,
+                                   HttpSession httpSession) {
         if(bindingResult.hasErrors()) {
             return "events/formSubmit";
         }

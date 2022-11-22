@@ -12,7 +12,6 @@
 ● *{}: selection 표현식
 -->
 <form action="#" th:action="@{/eventsFormSubmit}" method="post" th:object="${event}">
-    <input type="text" title="test" th:value="aaa"/>
     <input type="text" title="name" th:field="*{name}"/>
     <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Incorrect name</p>
     <input type="text" title="limit" th:field="*{limit}"/>
