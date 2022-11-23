@@ -6,14 +6,23 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/events")
 public class EventApi {
+
+    /**
+     * - @ExceptionHandler : 특정 예외가 발생한 요청을 처리하는 핸들러 정의
+     *  ● REST API의 경우 응답 본문에 에러에 대한 정보를 담아주고, 상태 코드를 설정하려면 ResponseEntity를 주로 사용한다.
+     *
+     * - 참고
+     *  ● https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html#mvc-ann-exceptionhandler
+     */
+    @ExceptionHandler
+    public ResponseEntity errorHandler() {
+        return ResponseEntity.badRequest().body("can't create event as .... ");
+    }
 
     /**
      * - @RequestBody
