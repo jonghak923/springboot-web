@@ -100,7 +100,7 @@ class sampleControllerTest {
                 .andExpect(content().string("mediaTypeNot"));
 
         // 415 error
-        this.mockMvc.perform(get("/mediaTypeAccept")
+        this.mockMvc.perform(get("/mediaTypeNot")
                         .contentType(MediaType.APPLICATION_JSON)  // 요청 시 type
                 )
                 .andDo(print())

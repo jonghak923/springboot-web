@@ -130,7 +130,7 @@ public class SampleController {
      */
     @RequestMapping(
             value = "/mediaTypeAccept",
-            consumes = "!" + MediaType.APPLICATION_JSON_VALUE,    // 요청 시 type (header.contentType)
+            consumes = MediaType.APPLICATION_JSON_VALUE,    // 요청 시 type (header.contentType)
             produces = MediaType.TEXT_PLAIN_VALUE           // 응답 시 type (header.accept)
     )
     @ResponseBody

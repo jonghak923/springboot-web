@@ -35,8 +35,8 @@ import java.util.Map;
 @SessionAttributes("event")
 public class HandlerMethodController {
 
-    @Autowired
-    EventValidator eventValidator;
+//    @Autowired
+//    EventValidator eventValidator;
 
     @GetMapping("/events/error")
     public String eventError(Model model) throws EventException {
