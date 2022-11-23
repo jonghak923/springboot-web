@@ -1,10 +1,12 @@
 package com.jonghak.springbootweb;
 
 import com.sun.net.httpserver.HttpsServer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -32,6 +34,29 @@ import java.util.Map;
  */
 @SessionAttributes("event")
 public class HandlerMethodController {
+
+    @Autowired
+    EventValidator eventValidator;
+
+    /**
+     * - @InitBinder : 특정 컨트롤러에서 바인딩 또는 검증(validator) 설정을 변경하고 싶을 때 사용
+     *
+     * - 특정 모델 객체에만 바인딩 또는 Validator 설정을 적용하고 싶은 경우
+     *  ● @InitBinder(“event”)
+     *
+     */
+    @InitBinder("event")
+    public void initEventBinder(WebDataBinder webDataBinder) {
+        // binding 설정
+        webDataBinder.setDisallowedFields("id"); // 블랙리스트 방식, 해당 명칭의 파라미터는 제외
+        webDataBinder.setAllowedFields("name", "limit", "startDate"); // 화이트리스트 방식, 해당 명칭의 파라미터만 인입가능
+
+        // validator 설정
+        webDataBinder.addValidators(new EventValidatorImpl());
+
+        // formatter 설정
+//        webDataBinder.addCustomFormatter();
+    }
 
     /**
      * - @ModelAttribute의 다른 사용법
@@ -261,6 +286,12 @@ public class HandlerMethodController {
         if(bindingResult.hasErrors()) {
             return "events/form-name";
         }
+
+        // 특정 시점에 Validator을 실행하고 싶을 경우
+//        eventValidator.validate(event, bindingResult);
+//        if(bindingResult.hasErrors()) {
+//            return "events/form-name";
+//        }
 
         return "redirect:/events/form/limit";
     }
